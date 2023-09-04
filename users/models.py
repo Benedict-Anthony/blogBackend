@@ -4,6 +4,7 @@ from django.utils.translation import gettext_lazy as _
 
 from core.utils import custom_id
 
+
 class UserManager(BaseUserManager):
     def create_user(self, email, password, **kwargs):
         if not email:
@@ -26,8 +27,10 @@ class UserManager(BaseUserManager):
             raise ValueError("Superuser must be assigned to is_superuser=True")
         return self.create(email, password, **kwargs)
 
+
 class User(AbstractBaseUser, PermissionsMixin):
-    id = models.CharField(primary_key=True, default=custom_id, editable=False, max_length=16)
+    id = models.CharField(primary_key=True, default=custom_id,
+                          editable=False, max_length=16)
     email = models.EmailField(_("Email Address"), max_length=255, unique=True)
     first_name = models.CharField(max_length=255)
     last_name = models.CharField(max_length=255)

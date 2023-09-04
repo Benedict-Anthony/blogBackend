@@ -7,6 +7,6 @@ urlpatterns = [
     path("mutate/", PostCRUDView.as_view()),
     path("comment/", CommentView.as_view()),
     path("categories/", CategoryView.as_view()),
-    path("mutate/<slug:slug>/", PostCRUDView.as_view()),
+    path("mutate/<str:id>/", PostCRUDView.as_view()),
     path("<slug:slug>/", PostView.as_view()),
 ]

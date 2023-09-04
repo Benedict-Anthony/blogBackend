@@ -9,8 +9,10 @@ from rest_framework import parsers
 from .models import Post, Category
 from .permissions import IsAuthorORPubisher, IsAuthor
 
+
 class PostView(APIView):
     serializer_class = PostViewSerializer
+
     def get(self, request, slug=None):
         if slug:
             post = Post.published.get(slug=slug)
@@ -21,30 +23,35 @@ class PostView(APIView):
         serializer = self.serializer_class(posts, many=True).data
         return Response(serializer)
 
+
 class CategoryView(APIView):
     serializer_class = CategorySerializer
     permission_classes = [permissions.IsAuthenticated]
+
     def get(self, request):
         category = Category.objects.all()
         serializer = self.serializer_class(category, many=True).data
         return Response(serializer)
 
+
 class PostCRUDView(APIView):
     serializer_class = PostCRUDSerializer
-    permission_classes = [permissions.IsAuthenticated, IsAuthorORPubisher, IsAuthor]
+    permission_classes = [permissions.IsAuthenticated,
+                          IsAuthorORPubisher, IsAuthor]
     parser_classes = [parsers.FormParser, parsers.MultiPartParser]
-    def get(self, request, slug=None):
+
+    def get(self, request, id=None):
         user = request.user
-        if slug:
+        if id:
             try:
-                post = Post.objects.get(slug=slug)
+                post = Post.objects.get(id=id)
                 if user.is_publisher:
-                    post = Post.objects.get(slug=slug, _author=request.user)
-            
+                    post = Post.objects.get(id=id, _author=request.user)
+
                 serializer = self.serializer_class(post).data
                 return Response(serializer)
             except Post.DoesNotExist:
-                return Response({"message":"post not found"}, status=status.HTTP_404_NOT_FOUND)
+                return Response({"message": "post not found"}, status=status.HTTP_404_NOT_FOUND)
         posts = Post.objects.all()
         if not user.is_publisher:
             posts = posts.filter(_author=request.user)
@@ -56,50 +63,51 @@ class PostCRUDView(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save(_author=request.user)
         return Response({"message": "success"}, status=status.HTTP_201_CREATED)
-    
-    def put(self, request, slug):
+
+    def put(self, request, id):
         try:
-            query = Post.objects.get(slug=slug, _author=request.user)
-            serializer = self.serializer_class(data=request.data, instance=query)
+            query = Post.objects.get(id=id, _author=request.user)
+            if request.user.id != query._author.id:
+                return Response({"message": "you are not allowed to update this post"}, status=status.HTTP_403_FORBIDDEN)
+
+            serializer = self.serializer_class(
+                data=request.data, instance=query)
             serializer.is_valid(raise_exception=True)
             serializer.save()
-            return Response({"message":"update was succesfull"}, status=status.HTTP_202_ACCEPTED)
+            return Response({"message": "update was succesfull"}, status=status.HTTP_202_ACCEPTED)
         except Post.DoesNotExist:
-            return Response({"message":"post not found"}, status=status.HTTP_404_NOT_FOUND)
-        
+            return Response({"message": "post not found"}, status=status.HTTP_404_NOT_FOUND)
 
-
-    def patch(self, request, slug):
+    def patch(self, request, id):
         if request.user.is_publisher == False:
-            return Response({"message":"you are not allowed to update this post"}, status=status.HTTP_403_FORBIDDEN)
-                
+            return Response({"message": "you are not allowed to update this post"}, status=status.HTTP_403_FORBIDDEN)
+
         try:
-            query = Post.objects.get(slug=slug)
-            serializer = self.serializer_class(data=request.data, instance=query, partial=True)
+            query = Post.objects.get(id=id)
+            serializer = self.serializer_class(
+                data=request.data, instance=query, partial=True)
             serializer.is_valid(raise_exception=True)
             serializer.save()
-            return Response({"message":"update was succesfull"}, status=status.HTTP_202_ACCEPTED)
+            return Response({"message": "update was succesfull"}, status=status.HTTP_202_ACCEPTED)
         except Post.DoesNotExist:
-            return Response({"message":"post not found"}, status=status.HTTP_404_NOT_FOUND)
-        
+            return Response({"message": "post not found"}, status=status.HTTP_404_NOT_FOUND)
 
-
-    def delete(self, request, slug):
+    def delete(self, request, id):
         try:
-            query = Post.objects.get(slug=slug)
-            
-            query.delete()
-            return Response({"message":"post deleted"}, status=status.HTTP_202_ACCEPTED)
-        except Post.DoesNotExist:
-            return Response({"message":"post not found"}, status=status.HTTP_404_NOT_FOUND)
+            query = Post.objects.get(id=id)
 
+            query.delete()
+            return Response({"message": "post deleted"}, status=status.HTTP_202_ACCEPTED)
+        except Post.DoesNotExist:
+            return Response({"message": "post not found"}, status=status.HTTP_404_NOT_FOUND)
 
 
 class CommentView(APIView):
     serializer_class = CommentSerializer
     permission_classes = [permissions.AllowAny]
+
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response({"message":"success!"}, status=status.HTTP_201_CREATED)
+        return Response({"message": "success!"}, status=status.HTTP_201_CREATED)

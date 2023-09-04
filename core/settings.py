@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     "rest_framework",
     'rest_framework_simplejwt',
     "corsheaders",
+    'drf_spectacular',
 ]
 
 MIDDLEWARE = [
@@ -104,7 +105,7 @@ REST_FRAMEWORK = extended.REST_FRAMEWORK
 
 CORS_ALLOWED_ORIGINS = extended.CORS_ALLOWED_ORIGINS
 
-
+SPECTACULAR_SETTINGS = extended.SPECTACULAR_SETTINGS
 AUTH_USER_MODEL = "users.User"
 SIMPLE_JWT = extended.SIMPLE_JWT
 
@@ -118,7 +119,6 @@ TIME_ZONE = "UTC"
 USE_I18N = True
 
 USE_TZ = True
-
 
 
 MEDIA_ROOT = os.path.join(BASE_DIR, "uploads")
