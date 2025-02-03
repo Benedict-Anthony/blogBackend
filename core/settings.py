@@ -21,7 +21,7 @@ SECRET_KEY = "django-insecure-u$f%4ws5b9_xb81pigthd9mnkab$+h#09ld6gq$b$)47^h@!xv
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get("DEBUG")
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["artistic-insights-alley-api.onrender.com"]
 
 
 # Application definition
